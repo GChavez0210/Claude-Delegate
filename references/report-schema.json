@@ -103,32 +103,29 @@
     "unexpected_changes",
     "unfinished_work"
   ],
-  "allOf": [
-    {
-      "if": {
-        "properties": { "status": { "const": "complete" } },
-        "required": ["status"]
-      },
-      "then": {
-        "properties": {
-          "checks": {
-            "not": {
-              "contains": {
-                "type": "object",
-                "properties": {
-                  "required": { "const": true },
-                  "status": {
-                    "enum": ["failed", "denied", "not_run"]
-                  }
-                },
-                "required": ["required", "status"]
+  "if": {
+    "properties": { "status": { "const": "complete" } },
+    "required": ["status"]
+  },
+  "then": {
+    "properties": {
+      "checks": {
+        "not": {
+          "type": "array",
+          "contains": {
+            "type": "object",
+            "properties": {
+              "required": { "const": true },
+              "status": {
+                "enum": ["failed", "denied", "not_run"]
               }
-            }
-          },
-          "unexpected_changes": { "maxItems": 0 },
-          "unfinished_work": { "maxItems": 0 }
+            },
+            "required": ["required", "status"]
+          }
         }
-      }
+      },
+      "unexpected_changes": { "type": "array", "maxItems": 0 },
+      "unfinished_work": { "type": "array", "maxItems": 0 }
     }
-  ]
+  }
 }

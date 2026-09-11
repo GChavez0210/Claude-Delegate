@@ -30,6 +30,13 @@ When automatic capture is available and proportionate:
 2. Send `/usage`, wait for the view, and record only visibly returned fields.
 3. Dismiss the view and exit without submitting a work prompt.
 
+Some CLI builds may still show a workspace-trust prompt in restricted
+interactive mode or display an unsolicited Remote Control connection attempt.
+Confirm trust only after independently verifying that the disposable workspace
+is the exact user-authorized directory. Do not enable or retry Remote Control or
+another unexpected integration merely to obtain telemetry; if it does not fail
+closed, exit and report usage as unavailable.
+
 `/usage` and other background commands can themselves cause small token usage.
 Do not describe this check as cost-free. Its terminal layout is version- and
 plan-dependent; if capture or parsing is unreliable, report it as unavailable
@@ -73,6 +80,18 @@ reset credit exists.
 - Compare matching named pools and windows only.
 - Present remaining capacity on a 100-to-0 scale. When only used percentage is
   returned, calculate `remaining = 100 - used`.
+- Display every available remaining percentage as a fixed-width, ASCII-only
+  depletion bar followed by the numeric value. Use 20 cells, `#` for remaining
+  capacity, and `-` for depleted capacity; round the bar to the nearest cell
+  while preserving the observed percentage in the label. For example:
+
+  ```text
+  Agent SDK [##############------] 70% remaining
+  Five-hour [#####---------------] 23% remaining
+  ```
+
+  Clamp calculated values to 0-100. If a percentage is unavailable, do not
+  estimate a bar; report `<pool> [????????????????????] unavailable`.
 - Calculate `change = after remaining - before remaining`; consumption is
   negative and a reset is positive. Report percentage-point changes.
 - An unchanged rounded value means no visible change, not zero consumption.

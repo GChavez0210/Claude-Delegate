@@ -18,6 +18,10 @@ not modify an existing personal copy automatically.
   is recommended for native Windows Claude Code use.
 - A PTY-capable host only when automatic interactive `/usage` capture is used.
 
+The skill runtime does not require Python. Repository maintainers running the
+development validator need Python 3.10 or later; CI uses Python 3.12. Depending
+on the platform, the launcher may be named `python`, `python3`, or `py -3`.
+
 Claude Code installation and authentication are documented by Anthropic in
 [Advanced setup](https://code.claude.com/docs/en/getting-started) and
 [Authentication](https://code.claude.com/docs/en/authentication).
@@ -90,7 +94,10 @@ without informed user authorization.
 
 Usage capture is best-effort. `/usage` output varies by version and plan and may
 itself cause small background token use. Token counts and locally estimated API
-cost are not proof of subscription limits or actual billing.
+cost are not proof of subscription limits or actual billing. Available
+remaining percentages are reported as depleting ASCII bars with the exact
+numeric percentage beside them, for example
+`[##############------] 70% remaining`.
 
 ## Known limitations
 
@@ -111,11 +118,28 @@ cost are not proof of subscription limits or actual billing.
 
 ## Development validation
 
-Validate the skill metadata and structure with Codex's `quick_validate.py`,
-parse the report schema as JSON, validate representative positive and negative
-reports against draft 7, and check Markdown links. Any end-to-end Claude test
-should use a disposable data-free workspace and an explicitly authorized,
-concrete task.
+Run the dependency-free core checks and the no-model local CLI probe with:
+
+```text
+python scripts/validate_skill.py --check-cli
+```
+
+Replace `python` with `python3` or `py -3` when that is the available launcher.
+
+For full YAML, draft-7 metaschema, and positive/negative report-fixture
+validation, install the development-only requirements in an isolated
+environment and run:
+
+```text
+python -m pip install -r requirements-dev.txt
+python scripts/validate_skill.py --require-deps --check-cli
+```
+
+The included GitHub Actions workflow is configured to run the full package
+validation on Windows, macOS, and Linux. It does not install Claude Code or send
+a model request. Its first hosted run remains pending until these changes are
+pushed. Any end-to-end Claude test should use a disposable data-free workspace
+and an explicitly authorized, concrete task.
 
 ## License and trademarks
 
