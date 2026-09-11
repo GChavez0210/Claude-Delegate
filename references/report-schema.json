@@ -1,0 +1,134 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "status": {
+      "type": "string",
+      "enum": ["complete", "partial", "blocked"]
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 1
+    },
+    "instruction_files": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "changed_files": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "checks": {
+      "type": "array",
+      "items": {
+        "oneOf": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "command": { "type": "string", "minLength": 1 },
+              "required": { "type": "boolean" },
+              "status": { "const": "passed" },
+              "exit_code": { "const": 0 },
+              "outcome": { "type": "string", "minLength": 1 }
+            },
+            "required": ["command", "required", "status", "exit_code", "outcome"]
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "command": { "type": "string", "minLength": 1 },
+              "required": { "type": "boolean" },
+              "status": { "const": "failed" },
+              "exit_code": {
+                "type": "integer",
+                "not": { "const": 0 }
+              },
+              "outcome": { "type": "string", "minLength": 1 }
+            },
+            "required": ["command", "required", "status", "exit_code", "outcome"]
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "command": { "type": "string", "minLength": 1 },
+              "required": { "type": "boolean" },
+              "status": { "const": "denied" },
+              "outcome": { "type": "string", "minLength": 1 }
+            },
+            "required": ["command", "required", "status", "outcome"]
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "command": { "type": "string", "minLength": 1 },
+              "required": { "type": "boolean" },
+              "status": { "const": "not_run" },
+              "outcome": { "type": "string", "minLength": 1 }
+            },
+            "required": ["command", "required", "status", "outcome"]
+          }
+        ]
+      }
+    },
+    "permission_denials": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "unexpected_changes": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "unfinished_work": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 }
+    }
+  },
+  "required": [
+    "status",
+    "summary",
+    "instruction_files",
+    "changed_files",
+    "checks",
+    "permission_denials",
+    "unexpected_changes",
+    "unfinished_work"
+  ],
+  "allOf": [
+    {
+      "if": {
+        "properties": { "status": { "const": "complete" } },
+        "required": ["status"]
+      },
+      "then": {
+        "properties": {
+          "checks": {
+            "not": {
+              "contains": {
+                "type": "object",
+                "properties": {
+                  "required": { "const": true },
+                  "status": {
+                    "enum": ["failed", "denied", "not_run"]
+                  }
+                },
+                "required": ["required", "status"]
+              }
+            }
+          },
+          "unexpected_changes": { "maxItems": 0 },
+          "unfinished_work": { "maxItems": 0 }
+        }
+      }
+    }
+  ]
+}

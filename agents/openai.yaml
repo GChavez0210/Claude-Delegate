@@ -1,0 +1,7 @@
+interface:
+  display_name: "Claude Delegate"
+  short_description: "Bounded delegation to a local Claude Code CLI"
+  default_prompt: "Use $claude-delegate to assign this bounded task to Claude Code, then inspect and independently verify the result."
+
+policy:
+  allow_implicit_invocation: true
