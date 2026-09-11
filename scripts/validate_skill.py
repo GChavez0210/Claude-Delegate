@@ -17,6 +17,7 @@ ROOT = Path(__file__).resolve().parents[1]
 SKILL_PATH = ROOT / "SKILL.md"
 SCHEMA_PATH = ROOT / "references" / "report-schema.json"
 OPENAI_YAML_PATH = ROOT / "agents" / "openai.yaml"
+WORKFLOW_PATH = ROOT / ".github" / "workflows" / "validate.yml"
 
 ALLOWED_FRONTMATTER_KEYS = {
     "name",
@@ -140,6 +141,28 @@ def validate_openai_yaml(yaml_module: Any | None) -> None:
     require(
         isinstance(default_prompt, str) and "$claude-delegate" in default_prompt,
         "default_prompt must mention $claude-delegate",
+    )
+
+
+def validate_workflow() -> None:
+    content = WORKFLOW_PATH.read_text(encoding="utf-8")
+    require(
+        re.search(r'(?m)^\s*cache:\s*["\']?pip["\']?\s*$', content) is not None,
+        "validation workflow must enable pip caching",
+    )
+    dependency_match = re.search(
+        r'(?m)^\s*cache-dependency-path:\s*["\']?([^"\'\r\n]+?)["\']?\s*$',
+        content,
+    )
+    require(
+        dependency_match is not None,
+        "pip cache must declare cache-dependency-path",
+    )
+    assert dependency_match is not None
+    dependency_path = dependency_match.group(1).strip()
+    require(
+        (ROOT / dependency_path).is_file(),
+        f"pip cache dependency file does not exist: {dependency_path}",
     )
 
 
@@ -320,6 +343,7 @@ def main() -> int:
         yaml_module, jsonschema_module = load_optional_dependencies(arguments.require_deps)
         validate_frontmatter(yaml_module)
         validate_openai_yaml(yaml_module)
+        validate_workflow()
         validate_local_links()
         validate_schema(jsonschema_module)
         if arguments.check_cli:
