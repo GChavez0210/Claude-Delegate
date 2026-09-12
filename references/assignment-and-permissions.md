@@ -8,8 +8,8 @@ Claude does not inherit the Codex conversation. Include all material context:
 Repository or workspace:
 <absolute path and starting Git state>
 
-Repository instructions already read by Codex:
-<material AGENTS.md, CLAUDE.md, and local constraints>
+Repository instructions and relevant documentation for Claude to read:
+<paths located by Codex; Claude reads only what the task requires>
 
 Objective:
 <one concrete outcome>
@@ -28,11 +28,37 @@ You share this project with other contributors. Preserve unrelated work. Do not
 change files outside the owned scope. Report instruction files found, changed
 files, every check with its actual exit status, permission denials, unexpected
 changes, and unfinished work. Do not claim a check passed unless you ran it and
-observed the result.
+observed the result. Return only the structured report. Keep the summary to one
+sentence and every check outcome to one line.
 ```
 
 Name exact checks instead of asking for "production quality." Start focused and
-broaden only when failures, shared behavior, or material risk justify it.
+broaden only when failures, shared behavior, or material risk justify it. Codex
+should locate relevant documentation without preloading it; avoid making both
+agents ingest the same material. Codex may read a specific document when needed
+to establish authority or independently resolve a disputed verification fact.
+
+## Complete the tool budget before launch
+
+Avoid preventable permission failures by deriving the tool budget from the
+objective and every acceptance check before starting Claude:
+
+1. List the built-in tools the work genuinely needs. Ordinary implementation
+   commonly needs `Read`, `Glob`, `Grep`, `Write`, and `Edit`; add `Bash` only
+   when an authorized check or operation requires it.
+2. Put the complete availability boundary in `--tools`.
+3. Put each expected built-in call and each exact authorized shell matcher in
+   `--allowedTools` as a distinct argument. Availability alone does not
+   pre-approve a call.
+4. If the task predictably needs installation, network, Git mutation, or another
+   separately consequential action, obtain that authority once before launch.
+
+Do not deliberately under-authorize a known requirement and wait for Claude to
+discover it. Conversely, do not add speculative tools or broad command
+wildcards merely to avoid prompts. If an already user-authorized action was
+accidentally omitted, correct only the missing rule and resume once. A denial
+caused by missing user authority still requires the user; permission bypass is
+never a recovery mechanism.
 
 ## Permission boundary
 
@@ -55,9 +81,11 @@ For the documented baseline (Claude Code 2.1.259 or later):
 - Never pass either dangerous permission-bypass flag.
 
 Restricted mode does not auto-load repository `CLAUDE.md` or ordinary settings.
-Codex must read applicable instructions and include their material contents in
-the assignment. Managed settings still apply. Do not add a temporary settings
-file unless a concrete required setting has been inspected and validated.
+Name applicable instruction and documentation paths in the assignment and give
+Claude `Read` access so it can load only what it needs. If `Read` is unavailable,
+pass required contents once rather than having both agents load them. Managed
+settings still apply. Do not add a temporary settings file unless a concrete
+required setting has been inspected and validated.
 
 If the installed CLI lacks a required boundary flag, upgrade it or stop for
 sensitive/unattended work. Do not improvise an undocumented `--setting-sources`
@@ -65,8 +93,9 @@ value or silently fall back to a weaker boundary.
 
 ## Launch contract
 
-Use the installed CLI's current help output to confirm all flags. The effective
-argument list must include:
+Confirm flags from current help when the CLI version changed, a flag is
+uncertain, or the parser rejected it; do not repeat an unchanged successful
+check before every launch. The effective argument list must include:
 
 ```text
 -p

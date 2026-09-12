@@ -85,6 +85,9 @@ def load_optional_dependencies(require_deps: bool) -> tuple[Any | None, Any | No
 
 def validate_frontmatter(yaml_module: Any | None) -> None:
     content = SKILL_PATH.read_text(encoding="utf-8")
+    word_count = len(re.findall(r"\S+", content))
+    require(word_count <= 550, f"SKILL.md exceeds the 550-word fast-path budget: {word_count}")
+    require("## Fast path" in content, "SKILL.md is missing the compact fast path")
     match = re.match(r"^---\r?\n(.*?)\r?\n---(?:\r?\n|$)", content, re.DOTALL)
     require(match is not None, "SKILL.md has invalid frontmatter delimiters")
     assert match is not None
@@ -215,12 +218,15 @@ def report_fixtures() -> tuple[dict[str, Any], list[dict[str, Any]]]:
         "status": "denied",
         "outcome": "Permission was denied.",
     }
+    overlong_summary = json.loads(json.dumps(valid))
+    overlong_summary["summary"] = "x" * 161
     return valid, [
         missing_exit,
         complete_with_unfinished,
         failed_with_zero,
         empty_summary,
         complete_with_required_denial,
+        overlong_summary,
     ]
 
 
@@ -231,6 +237,24 @@ def validate_schema(jsonschema_module: Any | None) -> None:
         "report schema must declare draft 7",
     )
     require(schema.get("additionalProperties") is False, "top-level extras must be denied")
+    summary_schema = schema.get("properties", {}).get("summary", {})
+    require(
+        summary_schema.get("maxLength") == 160,
+        "report summary must have a 160-character limit",
+    )
+    check_variants = (
+        schema.get("properties", {})
+        .get("checks", {})
+        .get("items", {})
+        .get("oneOf", [])
+    )
+    require(bool(check_variants), "report checks must declare outcome variants")
+    for index, variant in enumerate(check_variants, start=1):
+        outcome_schema = variant.get("properties", {}).get("outcome", {})
+        require(
+            outcome_schema.get("maxLength") == 160,
+            f"check outcome variant {index} must have a 160-character limit",
+        )
     for keyword in ("oneOf", "allOf", "anyOf"):
         require(
             keyword not in schema,

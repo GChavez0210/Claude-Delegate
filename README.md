@@ -58,11 +58,20 @@ Before an end-to-end run, Codex should make the proposed objective, owned paths,
 authorized checks, model/effort, and expected usage concrete. A paid or
 capacity-consuming request should not be launched merely to prove login.
 
+To avoid duplicate context cost, Codex locates applicable instructions and
+task-relevant documentation, then Claude reads only the files it needs. Codex
+does not preload the same documents and reads one later only when authorization
+or independent verification requires it. Claude returns a concise structured
+report rather than a narrative recap.
+
 ## Permission and data boundary
 
 The skill uses Claude Code restricted mode, explicit built-in tools,
 deterministic denial for unattended prompts, and an empty strict MCP
-configuration by default. It never authorizes permission bypass.
+configuration by default. Before launch, Codex builds one complete tool budget
+and pre-approves the expected file calls and exact authorized commands, reducing
+avoidable denials without broadening the user's authority. It never authorizes
+permission bypass.
 
 These controls reduce authority; they are not a full security sandbox. Claude
 receives the assignment and relevant repository contents over the network. Run
@@ -102,7 +111,9 @@ numeric percentage beside them, for example
 ## Known limitations
 
 - Claude Code flags, aliases, effort support, auth fields, and usage UI are
-  version-sensitive; the skill checks current help before each launch.
+  version-sensitive. The compact preflight reuses successful checks within a
+  task and refreshes help only after a version change, uncertainty, or parser
+  rejection.
 - The documented launch boundary was statically checked on Windows with Claude
   Code 2.1.268. macOS/Linux shell quoting and the full restricted resume path
   have not yet been exercised end to end.
