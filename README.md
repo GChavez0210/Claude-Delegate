@@ -101,12 +101,12 @@ variants, fast/extra-usage modes, and providers can have different availability
 or billing behavior. The skill does not opt into separately billed behavior
 without informed user authorization.
 
-Usage capture is best-effort. `/usage` output varies by version and plan and may
-itself cause small background token use. Token counts and locally estimated API
-cost are not proof of subscription limits or actual billing. Available
-remaining percentages are reported as depleting ASCII bars with the exact
-numeric percentage beside them, for example
-`[##############------] 70% remaining`.
+The host's available Codex limits are shown by default before and after each
+delegation. Remaining percentages use depleting ASCII bars with the exact value,
+for example `[##############------] 70% remaining`; consumption is a negative
+percentage-point change. Claude's interactive `/usage` capture remains optional
+because its output varies by version and plan and the probe may itself use a
+small amount of capacity. Missing telemetry is reported as unavailable.
 
 ## Known limitations
 

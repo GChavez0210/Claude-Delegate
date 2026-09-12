@@ -88,6 +88,26 @@ def validate_frontmatter(yaml_module: Any | None) -> None:
     word_count = len(re.findall(r"\S+", content))
     require(word_count <= 550, f"SKILL.md exceeds the 550-word fast-path budget: {word_count}")
     require("## Fast path" in content, "SKILL.md is missing the compact fast path")
+    require(
+        "before and after delegation" in content and "20 cells" in content,
+        "SKILL.md must show the default before/after remaining-capacity counter",
+    )
+    require(
+        "[????????????????????] unavailable" in content,
+        "SKILL.md must distinguish unavailable capacity from zero",
+    )
+    require(
+        re.search(r"do not edit\s+Claude's checkout while it runs", content) is not None,
+        "SKILL.md must protect the active checkout during delegation",
+    )
+    require(
+        "no universal 8-turn cap" in content,
+        "SKILL.md must require a proportional rather than fixed turn cap",
+    )
+    require(
+        "Stop on profile or billing ambiguity" in content,
+        "SKILL.md must stop when the active billing route is ambiguous",
+    )
     match = re.match(r"^---\r?\n(.*?)\r?\n---(?:\r?\n|$)", content, re.DOTALL)
     require(match is not None, "SKILL.md has invalid frontmatter delimiters")
     assert match is not None

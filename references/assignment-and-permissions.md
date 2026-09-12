@@ -109,7 +109,7 @@ check before every launch. The effective argument list must include:
 --mcp-config {"mcpServers":{}}
 --strict-mcp-config
 --no-chrome
---max-turns <bounded positive integer>
+--max-turns <proportional positive integer; no universal 8-turn default>
 --tools <comma-separated built-in tools>
 [--allowedTools <one or more exact approved rules>]
 ```
@@ -151,10 +151,11 @@ fi
 printf '%s' "$assignment" | claude "${claude_args[@]}"
 ```
 
-Omit `--allowedTools` when there are no rules. Do not add `--max-budget-usd` to
-a subscription profile; API spending controls belong only to an explicitly
-authorized API profile. Leave at least one turn of headroom for structured
-output.
+Omit `--allowedTools` when there are no rules. Choose the turn cap from task
+complexity and leave at least one turn for the structured report; increase it
+before launch when the expected tool sequence requires more headroom. Do not
+add `--max-budget-usd` to a subscription profile; API spending controls belong
+only to an explicitly authorized API profile.
 
 Treat the process exit status, outer JSON subtype/errors, presence of
 `structured_output`, Claude's task status, reported checks, filesystem changes,

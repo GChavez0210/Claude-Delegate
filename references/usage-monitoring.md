@@ -4,6 +4,11 @@ Capture Claude execution capacity and Codex orchestration capacity separately.
 Telemetry is best-effort unless the user explicitly requires a strict capacity
 gate. Missing data means unavailable, not zero usage.
 
+On the default fast path, capture the host's read-only Codex limits before and
+after delegation and display the bars below. Run Claude's interactive `/usage`
+probe only when requested or materially needed; its overhead is not required for
+the default counter.
+
 ## Identify the relevant Claude pool
 
 First identify the authorized authentication profile and active provider.
