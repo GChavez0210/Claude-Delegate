@@ -15,6 +15,8 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 SKILL_PATH = ROOT / "SKILL.md"
+ASSIGNMENT_PATH = ROOT / "references" / "assignment-and-permissions.md"
+CLI_COMPATIBILITY_PATH = ROOT / "references" / "cli-compatibility.md"
 SCHEMA_PATH = ROOT / "references" / "report-schema.json"
 OPENAI_YAML_PATH = ROOT / "agents" / "openai.yaml"
 WORKFLOW_PATH = ROOT / ".github" / "workflows" / "validate.yml"
@@ -28,6 +30,7 @@ ALLOWED_FRONTMATTER_KEYS = {
 }
 REQUIRED_CLI_FLAGS = {
     "--allowedTools",
+    "--chrome",
     "--effort",
     "--json-schema",
     "--mcp-config",
@@ -37,6 +40,7 @@ REQUIRED_CLI_FLAGS = {
     "--permission-mode",
     "--permission-prompts",
     "--restricted",
+    "--remote-control",
     "--strict-mcp-config",
     "--tools",
 }
@@ -89,8 +93,11 @@ def validate_frontmatter(yaml_module: Any | None) -> None:
     require(word_count <= 550, f"SKILL.md exceeds the 550-word fast-path budget: {word_count}")
     require("## Fast path" in content, "SKILL.md is missing the compact fast path")
     require(
-        "before and after delegation" in content and "20 cells" in content,
-        "SKILL.md must show the default before/after remaining-capacity counter",
+        "Capture Claude `/usage`" in content
+        and "before and after delegation" in content
+        and "every visible pool" in content
+        and "20 cells" in content,
+        "SKILL.md must capture and show Claude/Codex before-and-after capacity",
     )
     require(
         "[????????????????????] unavailable" in content,
@@ -101,12 +108,22 @@ def validate_frontmatter(yaml_module: Any | None) -> None:
         "SKILL.md must protect the active checkout during delegation",
     )
     require(
-        "no universal 8-turn cap" in content,
-        "SKILL.md must require a proportional rather than fixed turn cap",
+        "proportional guardrail" in content and "universal 8-turn" in content,
+        "SKILL.md must describe max turns as a proportional guardrail",
     )
     require(
-        "Stop on profile or billing ambiguity" in content,
+        re.search(r"stop on profile or billing ambiguity", content, re.IGNORECASE)
+        is not None,
         "SKILL.md must stop when the active billing route is ambiguous",
+    )
+    require(
+        "Omit routine setup" in content,
+        "SKILL.md must keep the final delegation report concise",
+    )
+    require(
+        "including web, browser, or MCP access" in content
+        and "[--chrome|--no-chrome]" in content,
+        "SKILL.md must preserve task-required external capabilities",
     )
     match = re.match(r"^---\r?\n(.*?)\r?\n---(?:\r?\n|$)", content, re.DOTALL)
     require(match is not None, "SKILL.md has invalid frontmatter delimiters")
@@ -186,6 +203,38 @@ def validate_workflow() -> None:
     require(
         (ROOT / dependency_path).is_file(),
         f"pip cache dependency file does not exist: {dependency_path}",
+    )
+
+
+def validate_operational_guidance() -> None:
+    assignment = ASSIGNMENT_PATH.read_text(encoding="utf-8")
+    compatibility = CLI_COMPATIBILITY_PATH.read_text(encoding="utf-8")
+    require(
+        re.search(
+            r"do\s+not\s+attempt\s+shell\s+commands\s+outside\s+the\s+"
+            r"explicitly\s+authorized\s+checks",
+            assignment,
+        )
+        is not None,
+        "assignment must discourage predictable unauthorized shell attempts",
+    )
+    require(
+        "--max-turns 10" in compatibility and "reported 12" in compatibility,
+        "CLI guidance must preserve the observed max-turns counter mismatch",
+    )
+    require(
+        all(term in assignment for term in ("WebSearch", "WebFetch", "--chrome")),
+        "assignment guidance must cover web search, fetch, and browser access",
+    )
+    require(
+        "does not work with `-p`" in assignment and "Claude Desktop on Windows" in assignment,
+        "assignment guidance must state the current computer-use boundary",
+    )
+    usage = (ROOT / "references" / "usage-monitoring.md").read_text(encoding="utf-8")
+    require(
+        "succeeded with `/rc active`" in usage
+        and "Diagnose the usage request's network access separately" in usage,
+        "usage guidance must distinguish network failure from Remote Control",
     )
 
 
@@ -388,6 +437,7 @@ def main() -> int:
         validate_frontmatter(yaml_module)
         validate_openai_yaml(yaml_module)
         validate_workflow()
+        validate_operational_guidance()
         validate_local_links()
         validate_schema(jsonschema_module)
         if arguments.check_cli:

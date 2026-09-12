@@ -4,10 +4,10 @@ Capture Claude execution capacity and Codex orchestration capacity separately.
 Telemetry is best-effort unless the user explicitly requires a strict capacity
 gate. Missing data means unavailable, not zero usage.
 
-On the default fast path, capture the host's read-only Codex limits before and
-after delegation and display the bars below. Run Claude's interactive `/usage`
-probe only when requested or materially needed; its overhead is not required for
-the default counter.
+On the default fast path, capture the host's read-only Codex limits and Claude's
+visible `/usage` pools before and after delegation. Display every visible pool;
+label its applicability instead of hiding interactive or uncertain pools merely
+because the print-mode pool is unavailable.
 
 ## Identify the relevant Claude pool
 
@@ -28,7 +28,7 @@ than ordinary interactive limits. Therefore:
 
 ## Claude snapshot
 
-When automatic capture is available and proportionate:
+By default, when interactive capture is available:
 
 1. Start a bounded temporary interactive Claude session with no task prompt,
    restricted tools, empty strict MCP configuration, and guaranteed cleanup.
@@ -38,9 +38,17 @@ When automatic capture is available and proportionate:
 Some CLI builds may still show a workspace-trust prompt in restricted
 interactive mode or display an unsolicited Remote Control connection attempt.
 Confirm trust only after independently verifying that the disposable workspace
-is the exact user-authorized directory. Do not enable or retry Remote Control or
-another unexpected integration merely to obtain telemetry; if it does not fail
-closed, exit and report usage as unavailable.
+is the exact user-authorized directory. Remote Control is legitimate and its
+presence alone is not a capture failure. If already configured, continue the
+isolated probe unless unexpected remote input or permission changes appear;
+then exit only the probe. Do not actively enable Remote Control merely for
+telemetry. This does not restrict the assignment's authorized capabilities.
+
+Observed on Windows with Claude Code 2.1.269: a sandboxed `/usage` load failed,
+while the identical restricted probe with Claude-service network access
+succeeded with `/rc active` and displayed current-session, current-week, and
+usage-credit pools. Diagnose the usage request's network access separately from
+Remote Control status.
 
 `/usage` and other background commands can themselves cause small token usage.
 Do not describe this check as cost-free. Its terminal layout is version- and
@@ -83,6 +91,8 @@ reset credit exists.
 - If Codex capacity is too low for independent review, reduce scope or wait.
 - Do not invent universal low-capacity thresholds.
 - Compare matching named pools and windows only.
+- Report every visible Claude pool by name and applicability even when no pool
+  can be confirmed as the one used by print mode.
 - Present remaining capacity on a 100-to-0 scale. When only used percentage is
   returned, calculate `remaining = 100 - used`.
 - Display every available remaining percentage as a fixed-width, ASCII-only
@@ -91,8 +101,8 @@ reset credit exists.
   while preserving the observed percentage in the label. For example:
 
   ```text
-  Agent SDK [##############------] 70% remaining
-  Five-hour [#####---------------] 23% remaining
+  Agent SDK [##############------] 72% -> 70% remaining (-2 points)
+  Five-hour [#####---------------] 23% -> 23% remaining (no visible change)
   ```
 
   Clamp calculated values to 0-100. If a percentage is unavailable, do not

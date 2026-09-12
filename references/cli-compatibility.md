@@ -5,7 +5,7 @@ security-relevant flag because Claude Code changes frequently.
 
 ## Verified snapshot
 
-Locally inspected on 2026-09-11 with Claude Code 2.1.268 on Windows:
+Locally inspected on 2026-09-11 with Claude Code 2.1.269 on Windows:
 
 - `-p` / `--print` and JSON output;
 - `--json-schema` structured output;
@@ -15,13 +15,17 @@ Locally inspected on 2026-09-11 with Claude Code 2.1.268 on Windows:
 - `--restricted`;
 - `--tools`, `--allowedTools`, and `--disallowedTools`;
 - `--mcp-config` and `--strict-mcp-config`;
+- `--chrome`, `--no-chrome`, and `--remote-control`;
 - `--resume` and `--fork-session`;
 - `claude auth status` JSON output.
 
 `--max-turns` was accepted by the local parser and is documented in the current
-official CLI reference, but was not displayed in that build's `--help`. Check it
-without a model request using `claude --max-turns 1 --help`, then still treat
-runtime enforcement as unverified until observed in a real authorized run.
+official CLI reference, but was not displayed in that build's `--help`. An
+observed isolated smoke run passed `--max-turns 10` while outer
+`num_turns` reported 12. The counter may include activity outside the enforced
+turn class, so treat the flag as a proportional guardrail rather than a proven
+strict ceiling. Check parser support without a model request using
+`claude --max-turns 1 --help` and inspect the terminal reason after each run.
 
 The local authentication JSON contained `loggedIn`, `authMethod`,
 `apiProvider`, and `subscriptionType`. These field names are observed behavior,

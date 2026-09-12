@@ -68,10 +68,12 @@ report rather than a narrative recap.
 
 The skill uses Claude Code restricted mode, explicit built-in tools,
 deterministic denial for unattended prompts, and an empty strict MCP
-configuration by default. Before launch, Codex builds one complete tool budget
-and pre-approves the expected file calls and exact authorized commands, reducing
-avoidable denials without broadening the user's authority. It never authorizes
-permission bypass.
+configuration by default. Restricted mode is a boundary, not a blanket feature
+ban: Codex includes task-required WebSearch, WebFetch, Chrome, or MCP tools and
+pre-approves expected calls. It never authorizes permission bypass. Computer use
+requires a supported interactive route; current Claude CLI computer use is
+macOS-only and unavailable with non-interactive `-p`, while Windows support is
+provided through Claude Desktop.
 
 These controls reduce authority; they are not a full security sandbox. Claude
 receives the assignment and relevant repository contents over the network. Run
@@ -101,12 +103,13 @@ variants, fast/extra-usage modes, and providers can have different availability
 or billing behavior. The skill does not opt into separately billed behavior
 without informed user authorization.
 
-The host's available Codex limits are shown by default before and after each
-delegation. Remaining percentages use depleting ASCII bars with the exact value,
-for example `[##############------] 70% remaining`; consumption is a negative
-percentage-point change. Claude's interactive `/usage` capture remains optional
-because its output varies by version and plan and the probe may itself use a
-small amount of capacity. Missing telemetry is reported as unavailable.
+Claude's visible `/usage` pools and the host's Codex limits are captured by
+default before and after delegation. Every visible pool is shown by name and
+applicability, even when it cannot be confirmed as the print-mode pool. Reports
+use an after-capacity ASCII bar plus exact before/after values, for example
+`[##############------] 72% -> 70% remaining (-2 points)`. An already-configured
+Remote Control connection does not by itself abort the isolated usage probe.
+Missing telemetry is reported as unavailable rather than estimated.
 
 ## Known limitations
 
@@ -115,8 +118,11 @@ small amount of capacity. Missing telemetry is reported as unavailable.
   task and refreshes help only after a version change, uncertainty, or parser
   rejection.
 - The documented launch boundary was statically checked on Windows with Claude
-  Code 2.1.268. macOS/Linux shell quoting and the full restricted resume path
+  Code 2.1.269. macOS/Linux shell quoting and the full restricted resume path
   have not yet been exercised end to end.
+- An observed isolated run passed `--max-turns 10` but reported 12 outer
+  turns. The skill therefore treats the flag as a proportional guardrail, not a
+  verified strict ceiling.
 - A prior disposable Windows capability probe produced three isolated files and
   passed 8 of 8 focused Node tests. That proves one bounded workflow, not broad
   runtime reliability or cross-platform compatibility.
