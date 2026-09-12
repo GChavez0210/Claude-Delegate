@@ -139,7 +139,7 @@ check before every launch. The effective argument list must include:
 --mcp-config <authorized servers or {"mcpServers":{}}>
 --strict-mcp-config
 [--chrome | --no-chrome]
---max-turns <proportional positive guardrail>
+--max-turns <20 by default; raise for longer tasks>
 --tools <comma-separated built-in tools>
 [--allowedTools <one or more exact approved rules>]
 ```
@@ -185,10 +185,13 @@ fi
 printf '%s' "$assignment" | claude "${claude_args[@]}"
 ```
 
-Omit `--allowedTools` when there are no rules. Choose the turn guardrail from
-task complexity and leave report headroom. Do not rely on `--max-turns` as a
-proven strict ceiling. Do not add `--max-budget-usd` to a subscription profile;
-API spending controls belong only to an explicitly authorized API profile.
+Omit `--allowedTools` when there are no rules. Default to 20 turns for ordinary
+bounded work. Raise it before a longer or multi-stage task based on expected
+discovery, implementation, checking, and report cycles. A larger value permits
+more time and capacity use but is not a target; Claude may finish early. Do not
+rely on `--max-turns` as a proven strict ceiling. Do not add `--max-budget-usd`
+to a subscription profile; API spending controls belong only to an explicitly
+authorized API profile.
 
 Treat the process exit status, outer JSON subtype/errors, presence of
 `structured_output`, Claude's task status, reported checks, filesystem changes,
@@ -202,6 +205,11 @@ original repository, instruction, ownership, prohibited-action, tool, and check
 boundaries before naming the remaining criterion. Repeat every relevant flag,
 including `--restricted`, `--permission-prompts none`, MCP restrictions, model,
 effort, tools, exact command rules, and turn cap.
+
+If Claude stops at the turn guardrail, preserve its edits and inspect the outer
+result, session ID, diff, and checks. Resume once with a new proportional cap
+only for a narrow completion still covered by the original authorization;
+otherwise split the remaining work or ask the user. Do not loop extensions.
 
 If resume rejects a restriction, stop. Do not retry with a weaker boundary.
 Codex may make an independently authorized narrow correction or ask the user.

@@ -108,8 +108,10 @@ def validate_frontmatter(yaml_module: Any | None) -> None:
         "SKILL.md must protect the active checkout during delegation",
     )
     require(
-        "proportional guardrail" in content and "universal 8-turn" in content,
-        "SKILL.md must describe max turns as a proportional guardrail",
+        "Default `<N>` to 20" in content
+        and "raise it before longer tasks" in content
+        and re.search(r"proportional\s+guardrail", content) is not None,
+        "SKILL.md must default max turns to 20 and scale for longer tasks",
     )
     require(
         re.search(r"stop on profile or billing ambiguity", content, re.IGNORECASE)

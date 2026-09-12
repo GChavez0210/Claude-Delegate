@@ -5,13 +5,13 @@ description: Delegate a bounded coding, investigation, or review task to a local
 
 # Delegate to Claude Code
 
-Delegate bounded work with minimal Codex context. Codex remains responsible for
-authorization, integration, and verification.
+Delegate bounded work with minimal Codex context; Codex retains authorization,
+integration, and verification.
 
 ## Fast path
 
 1. **Scope.** Locate applicable `AGENTS.md`, `CLAUDE.md`, and relevant docs
-   without reading them; Claude reads only what it needs. Codex reads a file only
+   without reading; Claude reads only what it needs. Codex reads a file only
    for authorization or disputed verification. Define objective, owned paths,
    prohibitions, acceptance criteria, and exact checks. Preserve existing work;
    do not edit Claude's checkout while it runs. Use a worktree for concurrent or
@@ -45,8 +45,8 @@ authorization, integration, and verification.
      --allowedTools <each expected tool or exact command rule>
    ```
 
-   Use `<N>` as a proportional guardrail, not a guaranteed or universal 8-turn
-   cap; leave report headroom.
+   Default `<N>` to 20; raise it before longer tasks. It is a proportional
+   guardrail, not a guaranteed ceiling; leave report headroom.
 
    Prefer Haiku for simple mechanical work, Sonnet for ordinary implementation,
    and Opus only when difficult reasoning warrants it. Honor the user's model;
@@ -62,7 +62,7 @@ was incomplete, correct only that rule and resume once with the full boundary.
 If authority itself is missing, ask the user. Never weaken restricted mode.
 
 Report status first and briefly. Omit routine setup; include material changes,
-Codex verification, failures or denials, unfinished work, and capacity bars. Do
+verification, failures/denials, unfinished work, and capacity bars. Do
 not commit, push, publish, deploy, install dependencies, access unrelated
 systems, or remove user work without explicit authorization.
 

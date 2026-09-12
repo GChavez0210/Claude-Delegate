@@ -123,6 +123,10 @@ Missing telemetry is reported as unavailable rather than estimated.
 - An observed isolated run passed `--max-turns 10` but reported 12 outer
   turns. The skill therefore treats the flag as a proportional guardrail, not a
   verified strict ceiling.
+- Ordinary bounded work defaults to 20 turns. Longer tasks receive a larger
+  upfront guardrail; this permits more time and capacity use but does not force
+  Claude to consume it. If reached, Codex preserves and reviews the work before
+  one bounded resume, splitting the remaining work, or asking the user.
 - A prior disposable Windows capability probe produced three isolated files and
   passed 8 of 8 focused Node tests. That proves one bounded workflow, not broad
   runtime reliability or cross-platform compatibility.
